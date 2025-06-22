@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- Login Form -->
+        <div id="login-section">
+            <h2>Admin Login</h2>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="login()">Login</button>
+        </div>
+
+        <!-- Dashboard (Hidden Initially) -->
+        <div id="dashboard-section" style="display:none;">
+            <h2>Upload Questions</h2>
+            <input type="file" id="file">
+            <button onclick="upload()">Upload</button>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        // Paste your firebaseConfig here
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEvbG18_PQ-j6xMtuYDGBS_G6IRsBgZVs",
+            authDomain: "questionpaperadmin.firebaseapp.com",
+            projectId: "questionpaperadmin",
+            storageBucket: ""questionpaperadmin.firebasestorage.app",
+            appId: "315414139864:web:50fea187a8f2e34c7298ad"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        // Auth Functions
+        function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('dashboard-section').style.display = 'block';
+                })
+                .catch(error => alert("Error: " + error.message));
+        }
+
+        function logout() {
+            firebase.auth().signOut();
+        }
+
+        // File Upload
+        function upload() {
+            const file = document.getElementById('file').files[0];
+            if (!file) return alert("No file selected");
+
+            const storageRef = firebase.storage().ref('questions/' + file.name);
+            storageRef.put(file).then(() => alert("File uploaded!"));
+        }
+    </script>
+</body>
+</html>
