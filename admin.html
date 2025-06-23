@@ -14,54 +14,78 @@
         <!-- Login Form -->
         <div id="login-section">
             <h2>Admin Login</h2>
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="password" placeholder="Password">
-            <button onclick="login()">Login</button>
+            <input type="email" id="email" placeholder="Email" class="form-control mb-2">
+            <input type="password" id="password" placeholder="Password" class="form-control mb-2">
+            <button onclick="login()" class="btn btn-primary">Login</button>
         </div>
 
         <!-- Dashboard (Hidden Initially) -->
         <div id="dashboard-section" style="display:none;">
             <h2>Upload Questions</h2>
-            <input type="file" id="file">
-            <button onclick="upload()">Upload</button>
-            <button onclick="logout()">Logout</button>
+            <input type="file" id="file" class="form-control mb-2">
+            <button onclick="upload()" class="btn btn-success">Upload</button>
+            <button onclick="logout()" class="btn btn-danger">Logout</button>
         </div>
     </div>
 
     <script>
-        // Paste your firebaseConfig here
         const firebaseConfig = {
-            apiKey: "AIzaSyCEvbG18_PQ-j6xMtuYDGBS_G6IRsBgZVs",
-            authDomain: "questionpaperadmin.firebaseapp.com",
-            projectId: "questionpaperadmin",
-            storageBucket: ""questionpaperadmin.firebasestorage.app",
-            appId: "315414139864:web:50fea187a8f2e34c7298ad"
+            apiKey: "AIzaSyCEvPQ-j6xMtuYDGBS_G6IRsBgZVs",
+            authDomain: "questionpapadmin.firebaseapp.com",
+            projectId: "questioperadmin",
+            storageBucket: "questioperadmin.appspot.com",  // Fixed syntax
+            appId: "315139864:web:50fea187a8f2e34c7298ad"
         };
-        firebase.initializeApp(firebaseConfig);
 
-        // Auth Functions
+        // Initialize after DOM loads
+        document.addEventListener('DOMContentLoaded', function() {
+            firebase.initializeApp(firebaseConfig);
+            console.log("Firebase initialized!");
+            
+            // Auto-redirect if already logged in
+            firebase.auth().onAuthStateChanged(user => {
+                if (user) {
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('dashboard-section').style.display = 'block';
+                }
+            });
+        });
+
         function login() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                alert("Please enter both email and password");
+                return;
+            }
+
             firebase.auth().signInWithEmailAndPassword(email, password)
                 .then(() => {
-                    document.getElementById('login-section').style.display = 'none';
-                    document.getElementById('dashboard-section').style.display = 'block';
+                    console.log("Login successful!");
                 })
-                .catch(error => alert("Error: " + error.message));
+                .catch(error => {
+                    console.error("Login error:", error);
+                    alert("Login failed: " + error.message);
+                });
         }
 
         function logout() {
-            firebase.auth().signOut();
+            firebase.auth().signOut()
+                .then(() => {
+                    document.getElementById('dashboard-section').style.display = 'none';
+                    document.getElementById('login-section').style.display = 'block';
+                });
         }
 
-        // File Upload
         function upload() {
             const file = document.getElementById('file').files[0];
             if (!file) return alert("No file selected");
 
             const storageRef = firebase.storage().ref('questions/' + file.name);
-            storageRef.put(file).then(() => alert("File uploaded!"));
+            storageRef.put(file)
+                .then(() => alert("File uploaded!"))
+                .catch(err => alert("Upload failed: " + err.message));
         }
     </script>
 </body>
