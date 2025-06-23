@@ -78,15 +78,47 @@
                 });
         }
 
-        function upload() {
-            const file = document.getElementById('file').files[0];
-            if (!file) return alert("No file selected");
+async function upload() {
+  const file = document.getElementById('file').files[0];
+  if (!file) {
+    alert("Please select a file first");
+    return;
+  }
 
-            const storageRef = firebase.storage().ref('questions/' + file.name);
-            storageRef.put(file)
-                .then(() => alert("File uploaded!"))
-                .catch(err => alert("Upload failed: " + err.message));
-        }
+  // Show loading state
+  const uploadBtn = document.querySelector('button[onclick="upload()"]');
+  uploadBtn.disabled = true;
+  uploadBtn.textContent = "Uploading...";
+
+  try {
+    // Create storage reference
+    const user = firebase.auth().currentUser;
+    const storageRef = firebase.storage().ref();
+    const fileRef = storageRef.child(`questions/${user.uid}/${Date.now()}_${file.name}`);
+
+    // Upload with explicit timeout
+    const uploadTask = fileRef.put(file);
+    
+    // Set timeout (5 minutes)
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Upload timeout exceeded")), 300000);
+    });
+
+    await Promise.race([
+      uploadTask,
+      timeoutPromise
+    ]);
+
+    alert("File uploaded successfully!");
+    console.log("File URL:", await fileRef.getDownloadURL());
+  } catch (error) {
+    console.error("Upload error:", error);
+    alert(`Upload failed: ${error.message}\n\nPlease check:\n1. Internet connection\n2. File size (<50MB)\n3. Try a different file`);
+  } finally {
+    uploadBtn.disabled = false;
+    uploadBtn.textContent = "Upload";
+  }
+}
     </script>
 </body>
 </html>
